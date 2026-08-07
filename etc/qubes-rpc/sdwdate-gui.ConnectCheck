@@ -51,7 +51,13 @@ else
   if [ "$(/usr/libexec/sdwdate-gui/sdwdate-gui-config-read 'disable')" = 'false' ]; then
     ## If the server is enabled, tell the caller to keep waiting and cache this
     ## fact so we don't have to re-parse the configuration file over and over.
-    touch -- "${sdwdate_gui_tmp_dir}/proxy-should-run"
+    ## '|| true': the cache is an OPTIMISATION -- it saves re-parsing the
+    ## config on the next poll. A read-only or full /run must not stop this
+    ## script emitting its verdict, and under errexit a failing touch aborted
+    ## with NO output at all, leaving the caller with nothing to act on. That
+    ## contradicts this file's whole contract: always one of y, n or q on
+    ## stdout.
+    touch -- "${sdwdate_gui_tmp_dir}/proxy-should-run" || true
     printf '%s\n' 'n'
     exit 0
   fi
