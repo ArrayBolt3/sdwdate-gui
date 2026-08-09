@@ -669,8 +669,7 @@ async def main_loop() -> None:
             break
         if not await do_setup():
             ## Socket may exist while the server is not yet accepting
-            ## connections (stale socket, server still starting). Back off
-            ## so a failing connect/setup does not busy-spin.
+            ## connections. Avoid busy-spinning in this scenario.
             await asyncio.sleep(1)
             continue
         while True:

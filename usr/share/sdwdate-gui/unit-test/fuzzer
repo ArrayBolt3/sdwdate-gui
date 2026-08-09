@@ -14,10 +14,7 @@ shopt -s shift_verbose
 
 counter=0
 
-## Assigned only once the counter reaches its limit, but read on EVERY
-## iteration by the loop-exit test below -- so it must start out empty, which
-## is what it expanded to before strict mode.
-do_break=""
+do_break="false"
 
 while true ; do
    for icon in success busy error ; do
