@@ -1,3 +1,83 @@
+commit b00b12dbf76bbd3865f081ce0ed1ce6b482c6df3
+Merge: be484bb a7d5b1c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 1 04:24:37 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit a7d5b1cdfcdb786c2a78f56e9a8338ee43ebbc2d
+Merge: be484bb 0e58179
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri Jul 31 16:45:51 2026 -0400
+
+    Merge pull request #2 from org-ai-assisted/ai
+
+    add CodeQL consumer workflows (actions, python)
+
+commit 0e58179caed25dbe3b51f7926680e5a88dfcc7e6
+Author: claude (dev150 521ab5f2-d574-457f-bd35-47c1afd84df6) <noreply@anthropic.com>
+Date:   Fri Jul 31 15:58:42 2026 -0400
+
+    sdwdate-gui client: back off on failed reconnect
+
+    do_setup() returning False (socket present but connect/setup handshake
+    fails -- stale socket, server not yet accepting) fell through to a
+    no-delay 'continue', busy-spinning main_loop() at 100% CPU. The only
+    asyncio.sleep(1) sat on the already-connected disconnect path.
+
+    Add a 1s backoff before retrying a failed do_setup().
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 674e242e488d9e851fe5227058d4a75225384577
+Author: claude (dev142 b93fb2c6-e15f-4d45-8566-f3ded893b70e) <noreply@anthropic.com>
+Date:   Fri Jul 31 12:57:49 2026 -0400
+
+    add CodeQL consumer workflows (actions, python)
+
+    - Replaces GitHub default-setup CodeQL (web-UI state, no file
+      representation) with the org's file-based consumer wrappers.
+    - Byte-identical copies of
+      developer-meta-files/consumer-templates/.github/workflows/.
+    - No .github/dm-consumer.yml needed: consumer-codeql-actions.yml
+      passes no dm-consumer-section, and codeql-python's section is
+      optional (ci/dm-consumer-load.sh soft-skips when absent).
+    - queries stays the reusable's default security-and-quality,
+      a superset of the security-extended suite default setup used.
+
+    Generated with assistance from Claude Code.
+
+commit be484bbb6a6c4ef7272b656440b41c23d8bf37ad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 11:08:43 2026 +0000
+
+    bumped changelog version
+
+commit bd5054fb8d92a9c51d3cba23712e061969b1d869
+Merge: e7ffa72 8642558
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 06:23:50 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 864255869ff18961c3073f6ffa8f72069dd3ef64
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 18 20:00:37 2026 -0400
+
+    Coverity: point CI at the org-ai-assisted-sdwdate-gui project
+
+commit f677550b967453721d7a299bbea3b3df35784d52
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 18 20:00:33 2026 -0400
+
+    Add consumer-coverity.yml (opt into Coverity Scan)
+
+commit e7ffa721ec37a3c2660f7cf4fa76dda38fb76851
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 17:43:42 2026 +0000
+
+    bumped changelog version
+
 commit 88afc947888602a896c1da5ac3e155cd9fc2d02b
 Merge: eb913a6 0ab4e34
 Author: Patrick Schleizer <adrelanos@whonix.org>
