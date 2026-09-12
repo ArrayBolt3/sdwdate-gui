@@ -11,8 +11,9 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
+export LC_ALL=C
 
 terminal_emulator_window_title="sdwdate Log Viewer"
 export terminal_emulator_window_title
 
-/usr/libexec/helper-scripts/terminal-wrapper "leaprun sdwdate-log-viewer"
+/usr/libexec/helper-scripts/terminal-wrapper leaprun sdwdate-log-viewer
