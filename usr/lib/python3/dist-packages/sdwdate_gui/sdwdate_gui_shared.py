@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -su
+#!/usr/bin/python3 -Bsu
 
 ## Copyright (C) 2015 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
@@ -80,8 +80,7 @@ def parse_ipc_command(
         raise ValueError("Invalid bytes in command")
     msg_string: str = msg_buf.decode(encoding="ascii")
     msg_parts: list[str] = msg_string.split(" ")
-    if len(msg_parts) < 1:
-        return sock_buf, None, None
+    assert len(msg_parts) >= 1
     function_name: str = msg_parts[0]
     msg_parts = msg_parts[1:]
     return sock_buf, function_name, msg_parts

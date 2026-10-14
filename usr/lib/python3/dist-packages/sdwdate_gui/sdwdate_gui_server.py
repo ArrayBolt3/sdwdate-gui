@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -su
+#!/usr/bin/python3 -Bsu
 
 ## Copyright (C) 2015 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
@@ -18,6 +18,7 @@ import signal
 import re
 import functools
 import logging
+import faulthandler
 
 from enum import Enum
 from typing import NoReturn, Pattern, Callable
@@ -1106,7 +1107,7 @@ to connect to or configure the Tor network."""
             "&Exit",
             self.menu,
         )
-        action.triggered.connect(sys.exit)
+        action.triggered.connect(self.exit_on_user_request)
         self.menu.addAction(action)
         self.menu_action_list.append(action)
 
@@ -1284,6 +1285,17 @@ to connect to or configure the Tor network."""
             )
         )
 
+    # pylint: disable=unused-argument
+    def exit_on_user_request(self, checked: bool = False) -> None:
+        """
+        Exits the application.
+        """
+
+        logging.info(
+            "User clicked the tray menu exit button, therefore exiting, OK."
+        )
+        sys.exit(0)
+
 
 class SdwdateGuiListener(QObject):
     """
@@ -1401,10 +1413,10 @@ class SdwdateGuiListener(QObject):
 # pylint: disable=unused-argument
 def signal_handler(sig: int, frame: FrameType | None) -> None:
     """
-    Handles SIGINT and SIGTERM.
+    Handles terminating signals.
     """
 
-    logging.info("Received SIGINT or SIGTERM, exiting.")
+    logging.info("Received signal %d, exiting.", sig)
     sys.exit(128 + sig)
 
 
@@ -1425,11 +1437,19 @@ def main() -> NoReturn:
         format="%(funcName)s: %(levelname)s: %(message)s", level=logging.INFO
     )
 
+    ## Print a traceback if the Python interpreter or PyQt crashes.
+    faulthandler.enable()
+
     app: QApplication = QApplication(["Sdwdate"])
     app.setQuitOnLastWindowClosed(False)
 
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    for term_signal in (
+        signal.SIGINT,
+        signal.SIGTERM,
+        signal.SIGHUP,
+        signal.SIGQUIT,
+    ):
+        signal.signal(term_signal, signal_handler)
 
     try:
         parse_config_files()

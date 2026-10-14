@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -su
+#!/usr/bin/python3 -Bsu
 
 ## Copyright (C) 2015 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
@@ -430,6 +430,10 @@ async def sdwdate_status_changed() -> None:
         logging.error("Unexpected error", exc_info=e)
         return
 
+    if not isinstance(status_dict, dict):
+        logging.warning("JSON from sdwdate is not a status dict!")
+        return
+
     for check_key in ("icon", "message"):
         if check_key not in status_dict:
             logging.warning(
@@ -699,6 +703,7 @@ async def main_loop() -> None:
             or not GlobalData.do_reconnect
             or GlobalData.server_pid_path.is_file()
         ):
+            logging.info("Not supposed to try to reconnect, exiting, OK.")
             sys.exit(0)
         await asyncio.sleep(1)
         continue
