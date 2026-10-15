@@ -622,8 +622,11 @@ async def setup_inotify_watches(
 
 async def do_setup() -> bool:
     """
-    Connects to the server and sets up inotify if needed.
+    Connects to the server and sets up internal state as needed.
     """
+
+    ## Get rid of any old bytes left in the buffer during a reconnect.
+    GlobalData.sock_buf = b""
 
     if not await open_connection():
         return False
