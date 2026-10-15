@@ -46,10 +46,7 @@ class ConfigData:
 MAX_MSG_SIZE: int = 4096
 
 
-## Pylint misparses the memoryview type hint here, see:
-## https://github.com/pylint-dev/pylint/issues/11665
-# pylint: disable=unsubscriptable-object
-def check_bytes_printable(buf: bytes | memoryview[int]) -> bool:
+def check_bytes_printable(buf: bytes | memoryview) -> bool:
     """
     Checks if all bytes in the provided buffer are printable ASCII or space.
     """
@@ -73,8 +70,7 @@ def parse_ipc_buf(
 
     msg_scan_pos: int = 0
     sock_buf_len: int = len(sock_buf)
-    # pylint: disable=unsubscriptable-object
-    sock_buf_view: memoryview[int] = memoryview(sock_buf)
+    sock_buf_view: memoryview = memoryview(sock_buf)
     out_msg_list: list[list[str]] = []
 
     while True:
@@ -94,8 +90,7 @@ def parse_ipc_buf(
         if sock_buf_len - (msg_scan_pos + 2) < msg_len:
             return (sock_buf[msg_scan_pos:], out_msg_list)
 
-        # pylint: disable=unsubscriptable-object
-        msg_buf: memoryview[int] = sock_buf_view[
+        msg_buf: memoryview = sock_buf_view[
             msg_scan_pos + 2 : (msg_len + msg_scan_pos + 2)
         ]
         msg_scan_pos += (msg_len + 2)
