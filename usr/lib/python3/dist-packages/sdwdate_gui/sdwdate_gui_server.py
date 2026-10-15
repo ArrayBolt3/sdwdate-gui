@@ -106,9 +106,9 @@ class TorStatus(Enum):
     """
 
     RUNNING = 0
-    STOPPED = 1
-    DISABLED = 2
-    DISABLED_RUNNING = 3
+    DISABLED_RUNNING = 1
+    STOPPED = 2
+    DISABLED = 3
     ABSENT = 0xFE
     UNKNOWN = 0xFF
 
@@ -744,9 +744,9 @@ class SdwdateTrayIcon(QSystemTrayIcon):
         self.error_icon: QIcon = QIcon(self.icon_path + "error.png")
         self.tor_icon_list: list[QIcon] = [
             QIcon(self.icon_path + "tor-ok.png"),
-            self.error_icon,
-            self.error_icon,
             QIcon(self.icon_path + "tor-warning.png"),
+            self.error_icon,
+            self.error_icon,
         ]
         self.sdwdate_icon_list: list[QIcon] = [
             QIcon(self.icon_path + "sdwdate-success.png"),
