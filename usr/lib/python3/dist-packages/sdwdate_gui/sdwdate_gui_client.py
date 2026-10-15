@@ -26,7 +26,7 @@ import pyinotify  # type: ignore
 from .sdwdate_gui_shared import (
     ConfigData,
     MAX_MSG_SIZE,
-    parse_ipc_command,
+    parse_ipc_buf,
     parse_config_files,
 )
 
@@ -184,31 +184,17 @@ async def try_parse_commands() -> None:
     Tries to run any commands in the buffer.
     """
 
-    while len(GlobalData.sock_buf) >= 2:
-        function_name: str | None
-        msg_parts: list[str] | None
-        try:
-            preproc_sock_buf_len: int = len(GlobalData.sock_buf)
-            GlobalData.sock_buf, function_name, msg_parts = parse_ipc_command(
-                GlobalData.sock_buf
-            )
-            postproc_sock_buf_len: int = len(GlobalData.sock_buf)
-            if preproc_sock_buf_len == postproc_sock_buf_len:
-                ## If the buffer didn't shrink, that means that we've only
-                ## received part of a message. Break so that we can receive
-                ## the rest of it later on.
-                break
-            if function_name is None:
-                continue
-            assert function_name is not None
-            assert msg_parts is not None
-        except ValueError:
-            await kick_server()
-            return
+    msg_list: list[list[str]]
+    try:
+        GlobalData.sock_buf, msg_list = parse_ipc_buf(GlobalData.sock_buf)
+    except ValueError:
+        await kick_server()
+        return
 
-        match function_name:
+    for msg_parts in msg_list:
+        match msg_parts[0]:
             case "open_tor_control_panel":
-                if len(msg_parts) != 0:
+                if len(msg_parts) != 1:
                     await kick_server()
                     return
                 otcp_task = asyncio.create_task(open_tor_control_panel())
@@ -217,7 +203,7 @@ async def try_parse_commands() -> None:
                     GlobalData.background_tasks.discard
                 )
             case "open_sdwdate_log":
-                if len(msg_parts) != 0:
+                if len(msg_parts) != 1:
                     await kick_server()
                     return
                 osl_task = asyncio.create_task(open_sdwdate_log())
@@ -226,7 +212,7 @@ async def try_parse_commands() -> None:
                     GlobalData.background_tasks.discard
                 )
             case "restart_sdwdate":
-                if len(msg_parts) != 0:
+                if len(msg_parts) != 1:
                     await kick_server()
                     return
                 rs_task = asyncio.create_task(restart_sdwdate())
@@ -235,7 +221,7 @@ async def try_parse_commands() -> None:
                     GlobalData.background_tasks.discard
                 )
             case "stop_sdwdate":
-                if len(msg_parts) != 0:
+                if len(msg_parts) != 1:
                     await kick_server()
                     return
                 ss_task = asyncio.create_task(stop_sdwdate())
@@ -244,7 +230,7 @@ async def try_parse_commands() -> None:
                     GlobalData.background_tasks.discard
                 )
             case "suppress_client_reconnect":
-                if len(msg_parts) != 0:
+                if len(msg_parts) != 1:
                     await kick_server()
                     return
                 suppress_client_reconnect()
@@ -622,8 +608,11 @@ async def setup_inotify_watches(
 
 async def do_setup() -> bool:
     """
-    Connects to the server and sets up inotify if needed.
+    Connects to the server and sets up internal state as needed.
     """
+
+    ## Get rid of any old bytes left in the buffer during a reconnect.
+    GlobalData.sock_buf = b""
 
     if not await open_connection():
         return False

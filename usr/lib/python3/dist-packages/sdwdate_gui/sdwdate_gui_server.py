@@ -57,7 +57,7 @@ from .sdwdate_gui_shared import (
     ConfigData,
     MAX_MSG_SIZE,
     check_bytes_printable,
-    parse_ipc_command,
+    parse_ipc_buf,
     parse_config_files,
 )
 
@@ -106,9 +106,9 @@ class TorStatus(Enum):
     """
 
     RUNNING = 0
-    STOPPED = 1
-    DISABLED = 2
-    DISABLED_RUNNING = 3
+    DISABLED_RUNNING = 1
+    STOPPED = 2
+    DISABLED = 3
     ABSENT = 0xFE
     UNKNOWN = 0xFF
 
@@ -313,36 +313,22 @@ class SdwdateGuiClient(QObject):
         Tries to run any commands in the buffer.
         """
 
-        while len(self.__sock_buf) >= 2:
-            function_name: str | None
-            msg_parts: list[str] | None
-            try:
-                preproc_sock_buf_len: int = len(self.__sock_buf)
-                self.__sock_buf, function_name, msg_parts = parse_ipc_command(
-                    self.__sock_buf
-                )
-                postproc_sock_buf_len: int = len(self.__sock_buf)
-                if preproc_sock_buf_len == postproc_sock_buf_len:
-                    ## If the buffer didn't shrink, that means that we've only
-                    ## received part of a message. Break so that we can receive
-                    ## the rest of it later on.
-                    break
-                if function_name is None:
-                    continue
-                assert function_name is not None
-                assert msg_parts is not None
-            except ValueError:
-                logging.warning(
-                    "Kicking client '%s' for sending invalid bytes in "
-                    "command buffer",
-                    self.client_name_or_unknown(),
-                )
-                self.kick_client()
-                return
+        msg_list: list[list[str]]
+        try:
+            self.__sock_buf, msg_list = parse_ipc_buf(self.__sock_buf)
+        except ValueError:
+            logging.warning(
+                "Kicking client '%s' for sending invalid bytes in "
+                "command buffer",
+                self.client_name_or_unknown(),
+            )
+            self.kick_client()
+            return
 
-            match function_name:
+        for msg_parts in msg_list:
+            match msg_list[0]:
                 case "set_client_name":
-                    if len(msg_parts) != 1:
+                    if len(msg_parts) != 2:
                         logging.warning(
                             "Kicking client '%s' for sending incorrect "
                             "number of arguments for 'set_client_name' "
@@ -351,10 +337,10 @@ class SdwdateGuiClient(QObject):
                         )
                         self.kick_client()
                         return
-                    if not self.__set_client_name(msg_parts[0]):
+                    if not self.__set_client_name(msg_parts[1]):
                         return
                 case "set_sdwdate_status":
-                    if len(msg_parts) != 2:
+                    if len(msg_parts) != 3:
                         logging.warning(
                             "Kicking client '%s' for sending incorrect "
                             "number of arguments for 'set_sdwdate_status' "
@@ -364,11 +350,11 @@ class SdwdateGuiClient(QObject):
                         self.kick_client()
                         return
                     if not self.__set_sdwdate_status(
-                        msg_parts[0], msg_parts[1]
+                        msg_parts[1], msg_parts[2]
                     ):
                         return
                 case "set_tor_status":
-                    if len(msg_parts) != 1:
+                    if len(msg_parts) != 2:
                         logging.warning(
                             "Kicking client '%s' for sending incorrect "
                             "number of arguments for 'set_tor_status' "
@@ -377,7 +363,7 @@ class SdwdateGuiClient(QObject):
                         )
                         self.kick_client()
                         return
-                    if not self.__set_tor_status(msg_parts[0]):
+                    if not self.__set_tor_status(msg_parts[1]):
                         return
                 case _:
                     self.kick_client()
@@ -744,9 +730,9 @@ class SdwdateTrayIcon(QSystemTrayIcon):
         self.error_icon: QIcon = QIcon(self.icon_path + "error.png")
         self.tor_icon_list: list[QIcon] = [
             QIcon(self.icon_path + "tor-ok.png"),
-            self.error_icon,
-            self.error_icon,
             QIcon(self.icon_path + "tor-warning.png"),
+            self.error_icon,
+            self.error_icon,
         ]
         self.sdwdate_icon_list: list[QIcon] = [
             QIcon(self.icon_path + "sdwdate-success.png"),

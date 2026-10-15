@@ -42,7 +42,7 @@ else
     true "INFO: $0: Check if '${server_sock_path}' socket file already exists..."
     if [ -S "${server_sock_path}" ]; then
       true "INFO: $0: socket file '${server_sock_path}' exists: yes"
-      ln -s -- "${server_sock_path}" '/run/qubes-rpc/sdwdate-gui.Connect'
+      ln -s --force -- "${server_sock_path}" '/run/qubes-rpc/sdwdate-gui.Connect'
       break
     fi
     true "INFO: $0: socket file '${server_sock_path}' exists: no"
