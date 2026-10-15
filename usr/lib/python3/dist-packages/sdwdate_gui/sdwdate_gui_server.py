@@ -326,7 +326,7 @@ class SdwdateGuiClient(QObject):
             return
 
         for msg_parts in msg_list:
-            match msg_list[0]:
+            match msg_parts[0]:
                 case "set_client_name":
                     if len(msg_parts) != 2:
                         logging.warning(
