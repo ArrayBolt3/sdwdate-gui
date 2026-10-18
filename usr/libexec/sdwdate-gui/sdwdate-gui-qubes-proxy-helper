@@ -21,6 +21,17 @@ shopt -s inherit_errexit
 shopt -s shift_verbose
 export LC_ALL=C
 
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/light_sleep.bsh
+source "${HELPER_SCRIPTS_PATH:-}/usr/libexec/helper-scripts/light_sleep.bsh"
+
+exithandler() {
+  local exit_code="$?"
+  if [ "${exit_code}" != '0' ]; then
+    touch /run/sdwdate-gui-qubes-proxy-helper-failed
+  fi
+}
+trap exithandler EXIT
+
 qubes_server_permitted="$(/usr/libexec/sdwdate-gui/sdwdate-gui-config-read 'run_server_in_qubes')" || exit 1
 default_user="$(qubesdb-read /default-user)" || exit 1
 default_user_uid="$(id -u "${default_user}")" || exit 1
@@ -38,7 +49,7 @@ else
   fi
   true "INFO: $0: Running on Qubes, and server enabled."
   while true; do
-    sleep 1
+    light_sleep 1
     true "INFO: $0: Check if '${server_sock_path}' socket file already exists..."
     if [ -S "${server_sock_path}" ]; then
       true "INFO: $0: socket file '${server_sock_path}' exists: yes"

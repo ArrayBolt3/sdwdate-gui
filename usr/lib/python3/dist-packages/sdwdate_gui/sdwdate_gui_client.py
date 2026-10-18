@@ -199,36 +199,28 @@ async def try_parse_commands() -> None:
                     return
                 otcp_task = asyncio.create_task(open_tor_control_panel())
                 GlobalData.background_tasks.add(otcp_task)
-                otcp_task.add_done_callback(
-                    GlobalData.background_tasks.discard
-                )
+                otcp_task.add_done_callback(GlobalData.background_tasks.discard)
             case "open_sdwdate_log":
                 if len(msg_parts) != 1:
                     await kick_server()
                     return
                 osl_task = asyncio.create_task(open_sdwdate_log())
                 GlobalData.background_tasks.add(osl_task)
-                osl_task.add_done_callback(
-                    GlobalData.background_tasks.discard
-                )
+                osl_task.add_done_callback(GlobalData.background_tasks.discard)
             case "restart_sdwdate":
                 if len(msg_parts) != 1:
                     await kick_server()
                     return
                 rs_task = asyncio.create_task(restart_sdwdate())
                 GlobalData.background_tasks.add(rs_task)
-                rs_task.add_done_callback(
-                    GlobalData.background_tasks.discard
-                )
+                rs_task.add_done_callback(GlobalData.background_tasks.discard)
             case "stop_sdwdate":
                 if len(msg_parts) != 1:
                     await kick_server()
                     return
                 ss_task = asyncio.create_task(stop_sdwdate())
                 GlobalData.background_tasks.add(ss_task)
-                ss_task.add_done_callback(
-                    GlobalData.background_tasks.discard
-                )
+                ss_task.add_done_callback(GlobalData.background_tasks.discard)
             case "suppress_client_reconnect":
                 if len(msg_parts) != 1:
                     await kick_server()
@@ -355,9 +347,9 @@ async def set_sdwdate_status(status: str, msg: str) -> None:
     ## raises) and cap the length, so a long or non-ASCII status message
     ## cannot overflow the two-byte length prefix or get the client kicked
     ## by the server's 4096-byte frame limit.
-    msg = msg.encode(
-        encoding="ascii", errors="replace"
-    ).decode(encoding="ascii")
+    msg = msg.encode(encoding="ascii", errors="replace").decode(
+        encoding="ascii"
+    )
     msg = msg[:MAX_STATUS_MSG_LEN]
 
     ## Encode spaces, newlines, and backslashes into octal escapes.
@@ -567,7 +559,8 @@ def setup_inotify_watch(target_path: str, watch_mask: int) -> None:
 
     assert GlobalData.watch_manager is not None
     ret: dict[str, int] = GlobalData.watch_manager.add_watch(
-        target_path, watch_mask,
+        target_path,
+        watch_mask,
     )
     for path, wd in ret.items():
         if wd < 0:
@@ -718,7 +711,7 @@ async def main() -> NoReturn:
     try:
         parse_config_files()
     except Exception as e:
-        logging.error("Configuration file parsing failed!", exc_info=e)
+        logging.critical("Configuration file parsing failed!", exc_info=e)
         sys.exit(1)
     assert isinstance(ConfigData.conf_dict["disable"], bool)
     if ConfigData.conf_dict["disable"]:
