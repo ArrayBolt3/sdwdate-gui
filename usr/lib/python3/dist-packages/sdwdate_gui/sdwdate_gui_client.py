@@ -711,7 +711,7 @@ async def main() -> NoReturn:
     try:
         parse_config_files()
     except Exception as e:
-        logging.error("Configuration file parsing failed!", exc_info=e)
+        logging.critical("Configuration file parsing failed!", exc_info=e)
         sys.exit(1)
     assert isinstance(ConfigData.conf_dict["disable"], bool)
     if ConfigData.conf_dict["disable"]:

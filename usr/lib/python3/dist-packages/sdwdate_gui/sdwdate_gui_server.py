@@ -1331,17 +1331,19 @@ class SdwdateGuiListener(QObject):
                     sdwdate_pid_str: str = f.readline().strip()
                 pid_verify_re: Pattern[str] = re.compile("^[0-9]+$")
                 if not pid_verify_re.match(sdwdate_pid_str):
-                    logging.error(
-                        "PID marker file contains non-numeric characters!",
+                    logging.critical(
+                        "PID marker file '%s' contains non-numeric "
+                        + "characters!",
+                        str(sdwdate_pid_file),
                     )
                     sys.exit(1)
                 if Path(f"/proc/{sdwdate_pid_str}").is_dir():
-                    logging.error(
+                    logging.critical(
                         "sdwdate_gui_server is already running!",
                     )
                     sys.exit(1)
             except Exception as e:
-                logging.error(
+                logging.critical(
                     "Could not check for running sdwdate_gui_server!",
                     exc_info=e,
                 )
@@ -1352,8 +1354,9 @@ class SdwdateGuiListener(QObject):
         except FileNotFoundError:
             pass
         except Exception as e:
-            logging.error(
-                "Could not erase old PID file!",
+            logging.critical(
+                "Could not erase old PID file '%s'!",
+                str(sdwdate_pid_file),
                 exc_info=e,
             )
             sys.exit(1)
@@ -1362,8 +1365,9 @@ class SdwdateGuiListener(QObject):
             with open(sdwdate_pid_file, "w", encoding="utf-8") as f:
                 f.write(str(os.getpid()))
         except Exception as e:
-            logging.error(
-                "Could not save PID to PID file!",
+            logging.critical(
+                "Could not save PID to PID file '%s'!",
+                str(sdwdate_pid_file),
                 exc_info=e,
             )
             sys.exit(1)
@@ -1373,8 +1377,9 @@ class SdwdateGuiListener(QObject):
         except FileNotFoundError:
             pass
         except Exception as e:
-            logging.error(
-                "Could not erase old server socket!",
+            logging.critical(
+                "Could not erase old server socket '%s'!",
+                str(sdwdate_socket_file),
                 exc_info=e,
             )
             sys.exit(1)
@@ -1383,7 +1388,14 @@ class SdwdateGuiListener(QObject):
         ## Restrict the IPC socket to the owning user rather than relying
         ## solely on the 0700 mode of the parent /run/user/UID directory.
         self.server.setSocketOptions(QLocalServer.SocketOption.UserAccessOption)
-        self.server.listen(str(sdwdate_socket_file))
+        if not self.server.listen(str(sdwdate_socket_file)):
+            logging.critical(
+                "Could not listen on server socket '%s', Qt returned error "
+                + "'%s'!",
+                str(sdwdate_socket_file),
+                self.server.errorString(),
+            )
+            sys.exit(1)
         self.server.newConnection.connect(self.spawn_client)
 
     def spawn_client(self) -> None:
@@ -1442,7 +1454,7 @@ def main() -> NoReturn:
     try:
         parse_config_files()
     except Exception as e:
-        logging.error("Configuration file parsing failed!", exc_info=e)
+        logging.critical("Configuration file parsing failed!", exc_info=e)
         sys.exit(1)
     assert isinstance(ConfigData.conf_dict["disable"], bool)
     assert isinstance(ConfigData.conf_dict["run_server_in_qubes"], bool)
