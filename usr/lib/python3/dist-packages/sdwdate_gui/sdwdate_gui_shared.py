@@ -58,9 +58,7 @@ def check_bytes_printable(buf: bytes | memoryview) -> bool:
     return True
 
 
-def parse_ipc_buf(
-    sock_buf: bytes
-) -> tuple[bytes, list[list[str]]]:
+def parse_ipc_buf(sock_buf: bytes) -> tuple[bytes, list[list[str]]]:
     """
     Splits an IPC buffer into a number of string lists, each representing an
     IPC command and its arguments. Each message is prefixed by its length,
@@ -80,7 +78,7 @@ def parse_ipc_buf(
         msg_len: int = int.from_bytes(
             sock_buf_view[msg_scan_pos : (msg_scan_pos + 2)],
             byteorder="big",
-            signed=False
+            signed=False,
         )
         if msg_len > MAX_MSG_SIZE:
             raise ValueError("Message length too long")
@@ -93,7 +91,7 @@ def parse_ipc_buf(
         msg_buf: memoryview = sock_buf_view[
             msg_scan_pos + 2 : (msg_len + msg_scan_pos + 2)
         ]
-        msg_scan_pos += (msg_len + 2)
+        msg_scan_pos += msg_len + 2
 
         if not check_bytes_printable(msg_buf):
             raise ValueError("Invalid bytes in command")

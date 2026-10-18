@@ -274,14 +274,18 @@ class SdwdateGuiClient(QObject):
                 self.__sock_buf = self.__sock_buf[idx + 1 :]
                 break
 
+        if (qrexec_header_bytes is None and len(self.__sock_buf) > 4096) or (
+            qrexec_header_bytes is not None and len(qrexec_header_bytes) > 4096
+        ):
+            logging.warning(
+                "Kicking client '%s' for sending too much data in qrexec "
+                "header",
+                self.client_name_or_unknown(),
+            )
+            self.kick_client()
+            return False
+
         if qrexec_header_bytes is None:
-            if len(self.__sock_buf) > 4096:
-                logging.warning(
-                    "Kicking client '%s' for sending too much data in qrexec "
-                    "header",
-                    self.client_name_or_unknown(),
-                )
-                self.kick_client()
             return False
 
         if not check_bytes_printable(qrexec_header_bytes):
