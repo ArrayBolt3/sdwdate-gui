@@ -22,3 +22,8 @@ accept the input.
 - A client name / hostname containing a space or control character: the server
   kicks the client. Exotic hostnames are reasonably treated as malicious. Do
   not escape or sanitize the name to accept it. (#14)
+- A kicked client's state is undefined. Kicking may leave stale fields (e.g. a
+  failed octal escape in set_sdwdate_status keeps the old message). The client
+  is scheduled for deletion via drop_client, so its residual state is never an
+  observable the server acts on. Kick-anytime without pre-cleanup is intended;
+  do not add cleanup-before-kick or treat the stale state as a bug. (#18)
