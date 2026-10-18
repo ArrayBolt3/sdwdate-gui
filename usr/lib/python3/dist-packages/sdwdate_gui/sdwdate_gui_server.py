@@ -307,9 +307,7 @@ class SdwdateGuiClient(QObject):
         ## Don't set the client name directly in this function,
         ## __set_client_name is designed to handle the qrexec case too.
         header_name: str = qrexec_header_parts[1]
-        self.__set_client_name(header_name)
-
-        return True
+        return self.__set_client_name(header_name)
 
     # pylint: disable=too-many-return-statements
     def __try_parse_commands(self) -> None:
