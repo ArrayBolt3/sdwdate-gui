@@ -22,3 +22,13 @@ accept the input.
 - A client name / hostname containing a space or control character: the server
   kicks the client. Exotic hostnames are reasonably treated as malicious. Do
   not escape or sanitize the name to accept it. (#14)
+- A kicked client's state is undefined. Kicking may leave stale fields (e.g. a
+  failed octal escape in set_sdwdate_status keeps the old message). The client
+  is scheduled for deletion via drop_client, so its residual state is never an
+  observable the server acts on. Kick-anytime without pre-cleanup is intended;
+  do not add cleanup-before-kick or treat the stale state as a bug. (#18)
+- The Qubes qrexec connection header is stamped by dom0 (`<service> <source-vm>`),
+  NOT by the untrusted client, so __parse_qubes_data trusts it: it takes
+  qrexec_header_parts[1] as the source-VM name and does not reject a header with
+  extra tokens (dom0 never emits one). Do not add untrusted-header field
+  validation here; the trust boundary is dom0/qrexec, not the header text.
