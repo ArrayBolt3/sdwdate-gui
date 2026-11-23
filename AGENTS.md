@@ -35,20 +35,12 @@ accept the input.
 
 ## Tray icon: QSystemTrayIcon backend binds at construction
 
-- `QSystemTrayIcon` binds its backend (legacy XEmbed vs StatusNotifier/SNI
-  D-Bus) at CONSTRUCTION, irreversibly. Constructed before the panel's
-  `org.kde.StatusNotifierWatcher` is on the session bus, Qt falls back to
-  XEmbed; an SNI-only panel (lxqt-panel, waybar) then NEVER shows the icon
-  (startup race, e.g. a Whonix sysmaint-split session). Neither an
-  `isSystemTrayAvailable()` poll before `show()` nor `hide()`+`show()` recovers
-  it; only DEFERRING construction until `isSystemTrayAvailable()` is true picks
-  SNI (Qt5 == Qt6).
-- Latent, not yet guarded: `main()` constructs `SdwdateTrayIcon()`
-  unconditionally
-  (`usr/lib/python3/dist-packages/sdwdate_gui/sdwdate_gui_server.py`). Deferring
-  the construct is a behaviour change (what to do when no tray host ever appears)
-  -- a maintainer call, not a silent fix.
-- Reproduce headless with `xfce4-panel` 4.20 libsystray under Xvfb (a real SNI
-  host); stalonetray (XEmbed auto-re-embed) and trayer/waybar (no headless
-  watcher) cannot reveal it. dist-ai `sdwdate-gui-tests-integration`
-  (`tray_startup_race_reproducer.py`) pins the Qt construction-order behaviour.
+Previously some notes were here documenting a supposed race between XEmbed and
+StatusNotifierItem support. The bug mentioned has not ever occurred in the
+wild, could not be reproduced under a Kicksecure Wayland desktop, and Qt
+documentation suggests it is not a problem, see
+https://doc.qt.io/qt-6/qsystemtrayicon.html. While it is possible the bug does
+exist, its description has been removed as it is purely a distraction for both
+humans and AI. Do not spend any further time debugging this. Do not reintroduce
+an issue description here. Leave the reproducer code under dist-ai in case a
+human wants it later.
